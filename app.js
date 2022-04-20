@@ -1,5 +1,6 @@
 const tileDisplay = document.querySelector('.tile-container');
 const keyboard = document.querySelector('.key-container');
+const messageDisplay = document.querySelector('.message-container');
 
 const wordle = "SUPER";
 
@@ -10,15 +11,17 @@ const keys = [
 ];
 
 const guessRows = [
-    [ "", "", "", "", ""],
-    [ "", "", "", "", ""],
-    [ "", "", "", "", ""],
-    [ "", "", "", "", ""],
-    [ "", "", "", "", ""]
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""],
+    ["", "", "", "", ""]
 ];
 
 let currentRow = 0;
 let currentTile = 0;
+
+let isGameOver = false;
 
 guessRows.forEach((guessRow, guessRowIndex) => {
     const rowElement = document.createElement('div');
@@ -32,7 +35,7 @@ guessRows.forEach((guessRow, guessRowIndex) => {
     tileDisplay.append(rowElement);
 })
 
-keys.forEach( key => {
+keys.forEach(key => {
     const buttonElement = document.createElement('button');
     buttonElement.textContent = key;
     buttonElement.setAttribute('id', key);
@@ -41,22 +44,119 @@ keys.forEach( key => {
 })
 
 const handleClick = (letter) => {
-    if(letter === "<<") {
-        console.log('DELETE LETTER');
+    if (letter === "<<") {
+        deleteLetter();
+        console.log('guessRows', guessRows);
         return;
     };
-    if(letter === "ENTER") {
-        console.log('Check row')
+    if (letter === "ENTER") {
+        checkRow();
+        console.log('guessRows', guessRows);
         return;
     }
     addLetter(letter);
 };
 
 const addLetter = (letter) => {
-    const tile = document.getElementById(`guessRow-${currentRow}-tile-${currentRow}`);
-    tile.textContent = letter;
-    guessRows[currentRow][currentTile] = letter;
-    tile.setAttribute('data', letter);
-    currentTile++;
-    console.log('guessRows', guessRows);
+    if (currentTile < 5 && currentRow < 6) {
+        const tile = document.getElementById(`guessRow-${currentRow}-tile-${currentTile}`);
+        tile.textContent = letter;
+        guessRows[currentRow][currentTile] = letter;
+        tile.setAttribute('data', letter);
+        currentTile++;
+        console.log('guessRows', guessRows);
+    }
 };
+
+const deleteLetter = () => {
+    if (currentTile > 0) {
+        currentTile--;
+        const tile = document.getElementById(`guessRow-${currentRow}-tile-${currentTile}`);
+        tile.textContent = "";
+        guessRows[currentRow][currentTile] = "";
+        tile.setAttribute('data', "");
+    }
+}
+
+const checkRow = () => {
+    const guess = guessRows[currentRow].join("");
+    flipTile();
+    if(currentTile > 4) {
+        console.log(guess);
+        if(wordle == guess) {
+            showMessage('Magnificent!');
+            isGameOver = true;
+            return
+        } else {
+            if(currentRow >= 5) {
+                isGameOver = true;
+                showMessage("Game Over!");
+                return
+            }
+            if(currentRow < 5) {
+                currentRow++
+                currentTile = 0;
+            }
+        }
+    }
+}
+
+const showMessage = (message) => {
+    const messageElement = document.createElement('p');
+    messageElement.textContent = message;
+    messageDisplay.append(messageElement);
+    setTimeout(() => messageDisplay.removeChild(messageElement), 2000);
+}
+
+const addColorToKey = (keyLetter, color) => {
+    const key = document.getElementById(keyLetter);
+    key.classList.add(color);
+}
+
+const flipTile = () => {
+    const rowTiles = document.querySelector(`#guessRow${currentRow}`).childNodes;
+    let checkWordle = wordle;
+    const guess = [];
+
+    rowTiles.forEach(tile => {
+        guess.push({ letter: tile.getAttribute('data'), color: 'grey-overlay'})
+    });
+
+    guess.forEach((guess, index) => {
+        if (guess.letter == wordle[index]) {
+            guess.color = 'green-overlay';
+            checkWordle = checkWordle.replace(guess.letter, '')
+        }
+    });
+
+    guess.forEach(guess => {
+        if(checkWordle.includes(guess.letter)) {
+            guess.color = 'yellow-overlay';
+            checkWordle = checkWordle.replace(guess.letter, '');
+        }
+    })
+
+    rowTiles.forEach((tile, index) => {
+        setTimeout(() => {
+            tile.classList.add('flip');
+            tile.classList.add(guess[index].color);
+            addColorToKey(guess[index].letter, guess[index].color)
+        }, 500 * index)
+    })
+    // rowTiles.forEach((tile, index) => {
+    //     const dataLetter = tile.getAttribute('data');
+    //     setTimeout(() => {
+    //         tile.classList.add('flip');
+    //         if(dataLetter ===  wordle[index]) {
+    //             tile.classList.add('green-overlay')
+    //             addColorToKey(dataLetter, 'green-overlay')
+    //         } else if (wordle.includes(dataLetter)) {
+    //             tile.classList.add('yellow-overlay')
+    //             addColorToKey(dataLetter, 'yellow-overlay')
+    //         } else {
+    //             tile.classList.add('gray-overlay')
+    //             addColorToKey(dataLetter, 'grey-overlay')
+    //         }
+    //     }, 500 * index)
+    // })
+}
