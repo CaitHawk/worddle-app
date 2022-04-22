@@ -1,8 +1,26 @@
+// const { arrayBuffer } = require("stream/consumers");
+
 const tileDisplay = document.querySelector('.tile-container');
 const keyboard = document.querySelector('.key-container');
 const messageDisplay = document.querySelector('.message-container');
 
-const wordle = "SUPER";
+// let wordle;
+
+// const getWordle = () => {
+//     fetch('https://localhost:8000/word')
+//     .then(response => response.json())
+//     .then(json => {
+//         console.log(json);
+//         wordle = json.toUpperCase();
+//     })
+//     .catch(err => console.log(err))
+// }
+
+// getWordle();
+
+let words = ['SUPER', 'REACT', 'LIVED', 'HAPPY', 'PENNED', 'VIVID', 'PIECE'];
+
+let wordle = words[Math.floor(Math.random() * words.length - 1)];
 
 const keys = [
     "Q", "W", "E", "R", "T", "Y", "U", "I", "O", "P",
